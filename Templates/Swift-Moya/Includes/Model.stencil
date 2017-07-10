@@ -1,0 +1,84 @@
+{% if description %}
+/** {{ description }} */
+{% endif %}
+import ObjectMapper
+import RealmSwift
+
+{% for enum in enums %}
+{% if not enum.isGlobal %}
+{% include "Includes/enum.stencil" using enum %}
+
+{% endif %}
+{% endfor %}
+class {{ type|upperCamelCase }}: Object {
+
+    {% for property in parent.properties where not property.isArray %}
+    {% if property.description %}
+    /** {{ property.description }} */
+    {% endif %}
+    {% if property.name == 'description' %}
+    dynamic var {{type|lowerCamelCase}}{{ property.name|upperCamelCase }}: {{ property.type }} = {{ property.optionalValue }}
+    {% else %}
+    dynamic var {{ property.name }}: {{ property.type }} = {{ property.optionalValue }}
+    {% endif %}
+
+    {% endfor %}
+    {% for property in parent.properties where property.isArray %}
+    {% if property.description %}
+    /** {{ property.description }} */
+    {% endif %}
+    var {{ property.name }}: List<{{ property.name|upperCamelCase }}> = List<{{ property.name|upperCamelCase }}>()
+
+    {% endfor %}
+    {% for property in properties where not property.isArray %}
+    {% if property.description %}
+    /** {{ property.description }} */
+    {% endif %}
+    {% if property.name == "description" %}
+    dynamic var {{type|lowerCamelCase}}{{ property.name|upperCamelCase }}: {{ property.type }} = {{ property.optionalValue }}
+    {% else %}
+    dynamic var {{ property.name }}: {{ property.type }} = {{ property.optionalValue }}
+    {% endif %}
+
+    {% endfor %}
+
+    {% for property in properties where property.isArray %}
+    {% if property.description %}
+    /** {{ property.description }} */
+    {% endif %}
+    var {{ property.name }}: List<{{ property.enumName }}> = List<{{ property.enumName }}>()
+
+    {% endfor %}
+    {% if additionalPropertiesType %}
+    public var additionalProperties: [String: {{ additionalPropertiesType }}] = [:]
+    {% endif %}
+    required convenience init?(map: Map) {
+        self.init()
+    }
+}
+
+extension {{type}}: Mappable {
+
+    func mapping(map: Map) {
+        {% for property in parent.properties %}
+        {% if property.isArray %}
+        {{ property.name }} <- (map["{{ property.value }}"], ListTransform<{{ property.enumName }}>())
+        {% endif %}
+        {% if property.name == 'description' %}
+        {{type|lowerCamelCase}}{{ property.name|upperCamelCase }} <- map["{{ property.value }}"]
+        {% else %}
+        {{ property.name }} <- map["{{ property.value }}"]
+        {% endif %}
+        {% endfor %}
+
+        {% for property in properties %}
+        {% if property.isArray %}
+        {{ property.name }} <- (map["{{ property.value }}"], ListTransform<{{ property.enumName }}>())
+        {% elif property.name == 'description' %}
+        {{type|lowerCamelCase}}{{ property.name|upperCamelCase }} <- map["{{ property.value }}"]
+        {% else %}
+        {{ property.name }} <- map["{{ property.value }}"]
+        {% endif %}
+        {% endfor %}
+    }
+}

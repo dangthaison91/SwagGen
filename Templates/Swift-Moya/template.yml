@@ -1,0 +1,23 @@
+formatter: swift
+basePath: /API
+options:
+  name: API
+  dependencies:
+
+templateFiles:
+  - path: enum.swift
+    context: enums
+    destination: "Enums/{{ enumName }}.swift"
+
+  - path: model.swift
+    context: definitions
+    destination: "Models/{{ filename }}.swift"
+
+  - path: targets.swift
+    context: tags
+    destination: "Targets/{% if name %}{{ name|upperCamelCase }}{% else %}{{options.name}}{% endif %}Targets.swift"
+
+  - path: APITargetType.swift
+    destination: "APITargetType.swift"
+    
+copiedFiles: [API.swift, PaginationAPI.swift, APIProvider.swift, AccessToken.swift, TokenKeychainStore.swift, CompositeEncoding.swift, Data+MimeType.swift, Plugins, JSON Mapper, Podfile]
